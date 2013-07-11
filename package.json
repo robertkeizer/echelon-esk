@@ -1,0 +1,12 @@
+{
+	"name": "echelon-esk",
+	"description": "Network Visualization.",
+	"version": "0.0.1",
+	"dependencies": {
+		"coffee-script": "latest",
+		"pcap": "latest",
+		"logging": "latest",
+		"socket.io": "latest",
+		"express": "latest"
+	}
+}
