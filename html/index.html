@@ -7,6 +7,8 @@
 		<script type="text/coffeescript">
 		$(document).ready ( ) ->
 
+			_interfaces	= Object( )
+
 			debug = ( o ) ->
 				if typeof o is "string"
 					$( "#debug" ).append o + "\n"
@@ -14,6 +16,10 @@
 					$( "#debug" ).append JSON.stringify( o ) + "\n"
 
 			update_interfaces = ( new_interfaces ) ->
+
+				# Set the page wide variable .. this way other functions can make use of the data.
+				_interfaces	= new_interfaces
+
 				# Get the current interfaces.
 				current_interfaces	= [ ]
 				for x in $( "#interfaces" ).children( "option" )
@@ -23,7 +29,16 @@
 				for new_interface of new_interfaces
 
 					if new_interface not in current_interfaces
-						$( "#interfaces" ).append( "<option value='" + new_interface + "'>" + new_interface + "</option>" )
+						$( "#interfaces" ).append "<option value='" + new_interface + "'>" + new_interface + "</option>"
+
+
+			update_interface_details = ( ) ->
+				selected_interface = $( "#interfaces" ).val( )
+				
+				$( "#interface_details" ).html ""
+				for ip_spec of _interfaces[selected_interface]
+					
+					debug _interfaces[selected_interface][ip_spec]
 
 			async.series [ ( cb ) ->
 						socket = io.connect( )
@@ -33,6 +48,8 @@
 					, ( cb ) ->
 						$.getJSON "/interfaces", ( interfaces ) ->
 							update_interfaces interfaces
+
+							update_interface_details( )
 							cb null
 					], ( err, res ) ->
 						if err
@@ -47,7 +64,7 @@
 		<div id="content">
 			<div id="selection">
 				<select id="interfaces"></select>
-				<div id="interface_description"></div>
+				<div id="interface_details"></div>
 			</div>
 			<div id="graphs">
 				
