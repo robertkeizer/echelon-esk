@@ -48,10 +48,14 @@ async.waterfall [
 
 		app	= express( )
 
+		auth	= ( user, pass, cb ) ->
+			cb null, ( user is 'user' and pass is 'pass' )
+
 		app.use express.logger( )
 		app.use express.cookieParser( )
 		app.use express.compress( )
 		app.use express.session( { "secret": "foooooo you" } )
+		app.use express.basicAuth auth
 		app.use express.static config.web_root
 
 		app.get "/", ( req, res ) ->
@@ -77,7 +81,6 @@ async.waterfall [
 			log "new connection on socket side."
 		
 		return cb null, { "config": config, "app": app, "io": io }
-		
 
 	], ( err, runtime ) ->
 		if err
