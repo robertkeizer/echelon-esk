@@ -57,6 +57,16 @@
 				# Set the content to simply be the status.
 				$("#status").html new_status 
 
+			start = ( ) ->
+				set_status "starting"
+				$("#stop").attr "disabled", null
+				$("#start").attr "disabled", "disabled"
+
+			stop = ( ) ->
+				set_status "stopped"
+				$("#start").attr "disabled", null
+				$("#stop").attr "disabled", "disabled"
+
 			async.series [ ( cb ) ->
 						socket = io.connect( )
 						socket.on "connect", ( ) ->
@@ -75,6 +85,11 @@
 							return
 
 						set_status "stopped"
+
+						$("#start").click start
+						$("#stop").click stop
+				
+						$("#stop").attr "disabled", "disabled"
 		
 						debug "Done setup.."
 
