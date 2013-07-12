@@ -66,6 +66,11 @@ async.waterfall [
 
 			return cb( null )
 
+
+		_handle_packet = ( packet ) ->
+			# Figure out all the data we'll need
+			# from the packet.. also call any socket.io stuff..
+
 		app.use express.logger( )
 		app.use express.cookieParser( )
 		app.use express.compress( )
@@ -80,14 +85,19 @@ async.waterfall [
 			if req.query.interface in pcap_sessions
 				return res.json true
 	
-			log "Starting packet capture on interface " + req.query.interface		
+			log "Starting packet capture on interface " + req.query.interface
 
 			# Start the pcap filtering here.. 
 			_session = pcap.createSession req.query.interface, ""
 
+			# Handle packets that get generated. Parse them and move them along.
 			_session.on "packet", ( raw_packet ) ->
 				_packet = pcap.decode.packet raw_packet
-				log _packet
+				handle_packet _packet
+
+			# Include new pcap session in pcap_sessions so that we don't start
+			# multiples on the same interface when a client asks for an existing one.
+			pcap_sessions[req.query.interface] = _session
 
 			res.json true
 
@@ -97,7 +107,11 @@ async.waterfall [
 			if req.query.interface not in pcap_sessions
 				return error_out res, "not_running"
 			
+			# Close the listening pcap session..
+			pcap_sessions[req.query.interface].close( )
 			
+			# delete the actual object so that v8 knows to get rid of it.
+			del pcap_sessions[req.query.interface]
 
 		app.get "/interfaces", ( req, res ) ->
 			res.json os.networkInterfaces( )
