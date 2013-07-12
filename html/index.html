@@ -15,6 +15,18 @@
 				else
 					$( "#debug" ).append JSON.stringify( o ) + "\n"
 
+			update_interface_details = ( ) ->
+				selected_interface = $( "#interfaces" ).val( )
+				
+				$( "#interface_details" ).html ""
+				for ip_spec of _interfaces[selected_interface]
+					
+					_to_append = ""
+					for key of _interfaces[selected_interface][ip_spec]
+						_to_append += key + " - " + _interfaces[selected_interface][ip_spec][key]
+
+					$( "#interface_details" ).append _to_append + "<br />"
+
 			update_interfaces = ( new_interfaces ) ->
 
 				# Set the page wide variable .. this way other functions can make use of the data.
@@ -31,14 +43,7 @@
 					if new_interface not in current_interfaces
 						$( "#interfaces" ).append "<option value='" + new_interface + "'>" + new_interface + "</option>"
 
-
-			update_interface_details = ( ) ->
-				selected_interface = $( "#interfaces" ).val( )
-				
-				$( "#interface_details" ).html ""
-				for ip_spec of _interfaces[selected_interface]
-					
-					debug _interfaces[selected_interface][ip_spec]
+				$("#interfaces").change update_interface_details
 
 			async.series [ ( cb ) ->
 						socket = io.connect( )
@@ -59,15 +64,22 @@
 
 		</script>
 		<script type="text/javascript" src="misc/coffee-script.js"></script>
+		<style type="text/css">
+		#interface_details {
+			font-size: 90%
+		}
+		</style>
 	</head>
 	<body>
 		<div id="content">
 			<div id="selection">
 				<select id="interfaces"></select>
 				<div id="interface_details"></div>
+				<input type="button" value="start" id="start" />
+				<input type="button" value="stop" id="stop" />
 			</div>
 			<div id="graphs">
-				
+				placeholder
 			</div>
 		</div>
 		<textarea id="debug" rows="20" cols="120"></textarea>
