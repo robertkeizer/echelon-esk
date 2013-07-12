@@ -54,7 +54,8 @@ async.waterfall [
 		app.use express.static config.web_root
 
 		app.get "/", ( req, res ) ->
-			res.end "What?"
+			res.writeHead 302, { "location": "/index.html" }
+			res.end( )
 
 		app.use ( err, req, res, cb ) ->
 			res.json { "error": err }
