@@ -52,20 +52,19 @@ async.waterfall [
 			cb null, ( user is 'user' and pass is 'pass' )
 
 		error_out = ( res, o ) ->
-			res.json { "error": o }
+			return res.json { "error": o }
 
 		missing_arg = ( res, arg ) ->
-			error_out res, { "name": "missing_argument", "argument": arg } }
+			return error_out res, { "name": "missing_argument", "argument": arg }
 
-		req_interface = ( res, req, cb ) ->
-
+		req_interface = ( req, res, cb ) ->
 			if not req.query.interface?
 				return missing_arg res, "interface"
 
 			if not req.query.interface in os.networkInterfaces( )
 				return error_out res, "invalid_interface_specified"
 
-			return cb null
+			return cb( null )
 
 		app.use express.logger( )
 		app.use express.cookieParser( )
@@ -77,17 +76,20 @@ async.waterfall [
 		pcap_sessions	= { }
 
 		app.get "/start", req_interface, ( req, res ) ->
-			
 			# Return true if we're already listening.
 			if req.query.interface in pcap_sessions
 				return res.json true
-			
+	
+			log "Starting packet capture on interface " + req.query.interface		
+
 			# Start the pcap filtering here.. 
-			_session = pcap.createSession req.query.interface ""
+			_session = pcap.createSession req.query.interface, ""
 
 			_session.on "packet", ( raw_packet ) ->
 				_packet = pcap.decode.packet raw_packet
-				
+				log _packet
+
+			res.json true
 
 		app.get "/stop", req_interface, ( req, res ) ->
 
