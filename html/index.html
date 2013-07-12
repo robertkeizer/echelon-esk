@@ -45,6 +45,18 @@
 
 				$("#interfaces").change update_interface_details
 
+			set_status = ( new_status ) ->
+
+				# Remove any css classes.. 
+				$( "#status" ).removeClass( )
+
+				# Set the css class if we know of the status.. 
+				if new_status in [ "stopped", "starting", "running" ]
+					$( "#status" ).addClass new_status
+
+				# Set the content to simply be the status.
+				$("#status").html new_status 
+
 			async.series [ ( cb ) ->
 						socket = io.connect( )
 						socket.on "connect", ( ) ->
@@ -56,10 +68,14 @@
 
 							update_interface_details( )
 							cb null
+
 					], ( err, res ) ->
 						if err
 							debug "Startup error.. " + err
 							return
+
+						set_status "stopped"
+		
 						debug "Done setup.."
 
 		</script>
@@ -68,10 +84,27 @@
 		#interface_details {
 			font-size: 90%
 		}
+		#status {
+			position: fixed;
+			top: 1em;
+			right: 1em;
+		}
+		.running {
+			color: green;
+		}
+		.stopped {
+			color: red;
+		}
+		.starting {
+			color: orange;
+		}
 		</style>
 	</head>
 	<body>
 		<div id="content">
+			<div id="status">
+				Unknown.
+			</div>
 			<div id="selection">
 				<select id="interfaces"></select>
 				<div id="interface_details"></div>
