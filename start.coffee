@@ -1,8 +1,9 @@
 fs	= require "fs"
+http	= require "http"
 
 async	= require "async"
 express	= require "express"
-io	= require "socket.io"
+sio	= require "socket.io"
 pcap	= require "pcap"
 log	= require( "logging" ).from __filename
 
@@ -62,12 +63,25 @@ async.waterfall [
 
 		app.use app.routes
 
-		app.listen config["port"], ( ) ->
-			return cb null, { "config": config, "app": app }
+		http_server	= http.createServer app
+		io		= sio.listen http_server
 
-	], ( err, startup ) ->
+		http_server.listen config["port"], ( ) ->
+			return cb null, config, app, io
+
+	, ( config, app, io, cb ) ->
+		# Setup socket.io handlers here..
+
+		io.sockets.on "connection", ( socket ) ->
+			# Do something funky with the socket.
+			log "new connection on socket side."
+		
+		return cb null, { "config": config, "app": app, "io": io }
+		
+
+	], ( err, runtime ) ->
 		if err
 			log "Fatal error: " + err
 			process.exit 1
 
-		log "Listening on port " + startup.config.port + ".."
+		log "Listening on port " + runtime.config.port + ".."
