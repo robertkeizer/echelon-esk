@@ -2,16 +2,57 @@
 	<head>
 		<title>eschelon-esk</title>
 		<script type="text/javascript" src="/misc/jquery-1.10.2.min.js"></script>
+		<script type="text/javascript" src="/misc/async.js"></script>
 		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
 		<script type="text/coffeescript">
 		$(document).ready ( ) ->
-			socket = io.connect( )
-			socket.on "connect", ( ) ->
-				$( "#test" ).html "IT WORKS"
+
+			debug = ( o ) ->
+				if typeof o is "string"
+					$( "#debug" ).append o + "\n"
+				else
+					$( "#debug" ).append JSON.stringify( o ) + "\n"
+
+			update_interfaces = ( new_interfaces ) ->
+				# Get the current interfaces.
+				current_interfaces	= [ ]
+				for x in $( "#interfaces" ).children( "option" )
+					current_interfaces.push $(x).attr "value"
+
+				# Iterate through the new interfaces.. looking for new ones
+				for new_interface of new_interfaces
+
+					if new_interface not in current_interfaces
+						$( "#interfaces" ).append( "<option value='" + new_interface + "'>" + new_interface + "</option>" )
+
+			async.series [ ( cb ) ->
+						socket = io.connect( )
+						socket.on "connect", ( ) ->
+							debug "socket.io connected."
+							cb null
+					, ( cb ) ->
+						$.getJSON "/interfaces", ( interfaces ) ->
+							update_interfaces interfaces
+							cb null
+					], ( err, res ) ->
+						if err
+							debug "Startup error.. " + err
+							return
+						debug "Done setup.."
+
 		</script>
 		<script type="text/javascript" src="misc/coffee-script.js"></script>
 	</head>
 	<body>
-		<div id="test">IT DOESN'T WORK</div>	
+		<div id="content">
+			<div id="selection">
+				<select id="interfaces"></select>
+				<div id="interface_description"></div>
+			</div>
+			<div id="graphs">
+				
+			</div>
+		</div>
+		<textarea id="debug" rows="20" cols="120"></textarea>
 	</body>
 </html>

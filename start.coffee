@@ -1,6 +1,6 @@
 fs	= require "fs"
 http	= require "http"
-
+os	= require "os"
 async	= require "async"
 express	= require "express"
 sio	= require "socket.io"
@@ -57,6 +57,9 @@ async.waterfall [
 		app.use express.session( { "secret": "foooooo you" } )
 		app.use express.basicAuth auth
 		app.use express.static config.web_root
+
+		app.get "/interfaces", ( req, res ) ->
+			res.json os.networkInterfaces( )
 
 		app.get "/", ( req, res ) ->
 			res.writeHead 302, { "location": "/index.html" }
