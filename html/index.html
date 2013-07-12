@@ -51,7 +51,7 @@
 				$( "#status" ).removeClass( )
 
 				# Set the css class if we know of the status.. 
-				if new_status in [ "stopped", "starting", "running" ]
+				if new_status in [ "stopped", "starting", "running", "stopping" ]
 					$( "#status" ).addClass new_status
 
 				# Set the content to simply be the status.
@@ -59,11 +59,18 @@
 
 			start = ( ) ->
 				set_status "starting"
+
+				$.getJSON "/start", { "interface": $("#interfaces").val( ) }, ( res ) ->
+
+					set_status "running"
+
 				$("#stop").attr "disabled", null
 				$("#start").attr "disabled", "disabled"
 
 			stop = ( ) ->
-				set_status "stopped"
+				set_status "stopping"
+				$.get "/stop", ( res ) ->
+					set_status "stopped"
 				$("#start").attr "disabled", null
 				$("#stop").attr "disabled", "disabled"
 
@@ -111,6 +118,9 @@
 			color: red;
 		}
 		.starting {
+			color: orange;
+		}
+		.stopping {
 			color: orange;
 		}
 		</style>

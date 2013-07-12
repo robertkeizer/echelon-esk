@@ -51,12 +51,31 @@ async.waterfall [
 		auth	= ( user, pass, cb ) ->
 			cb null, ( user is 'user' and pass is 'pass' )
 
+		error_out = ( res, o ) ->
+			res.json { "error": o }
+
+		missing_arg = ( res, arg ) ->
+			error_out res, { "name": "missing_argument", "argument": arg } }
+
 		app.use express.logger( )
 		app.use express.cookieParser( )
 		app.use express.compress( )
 		app.use express.session( { "secret": "foooooo you" } )
 		app.use express.basicAuth auth
 		app.use express.static config.web_root
+
+		app.get "/start", ( req, res ) ->
+			
+			if not req.query.interface?
+				return missing_arg res, "interface"
+			
+			if not req.query.interface in os.networkInterfaces( )
+				return error_out res, "invalid_interface_specified"
+			
+			# Start the pcap filtering here.. 
+
+		app.get "/stop", ( req, res ) ->
+			
 
 		app.get "/interfaces", ( req, res ) ->
 			res.json os.networkInterfaces( )
