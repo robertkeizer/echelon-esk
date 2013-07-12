@@ -1,5 +1,4 @@
 fs	= require "fs"
-util	= require "util"
 
 async	= require "async"
 express	= require "express"
@@ -38,8 +37,9 @@ async.waterfall [
 	, ( config, cb ) ->
 		# Verify that all the required configuration values are defined.
 
-		if not config.port?
-			return cb "'port' wasn't defined in the configuration."
+		for req in [ "port", "web_root" ]
+			if not config[req]?
+				return cb "'" + req + "' wasn't defined in the configuration."
 		return cb null, config
 
 	, ( config, cb ) ->
@@ -51,6 +51,7 @@ async.waterfall [
 		app.use express.cookieParser( )
 		app.use express.compress( )
 		app.use express.session( { "secret": "foooooo you" } )
+		app.use express.static config.web_root
 
 		app.get "/", ( req, res ) ->
 			res.end "What?"
